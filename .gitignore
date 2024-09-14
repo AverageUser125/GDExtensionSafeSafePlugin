@@ -1,0 +1,15 @@
+*.obj
+*.dblite
+less
+x64/
+Debug/
+.vs/GDextension
+.vs/GDextensionBase
+.vs/*.sqlite
+.vs/VSWorkspaceState.json
+demo/.godot/
+old/
+*.obj
+*.pdb
+*.os
+*.o
