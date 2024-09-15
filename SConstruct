@@ -28,8 +28,28 @@ env.Decider('MD5-timestamp')
 # - CPPFLAGS are for pre-processor flags
 # - CPPDEFINES are for pre-processor defines
 # - LINKFLAGS are for linking flags
-# - LINKFLAGS are for linking flags
 
+# fails cause gdextension uses std::array in UtilityFunctions apparantly
+# env.Append(LINKFLAGS="/NODEFAULTLIB")
+
+compiler = env['CC']
+print("Using the following compiler: " + compiler)
+if compiler == 'cl':
+    env.Append(CPPDEFINES=[("_HAS_EXCEPTIONS", 0)])
+    env.Append(CXXFLAGS=["/EHs-", "/std:c++17"])
+    env.Append(LINKFLAGS=["/OPT:REF", "/NODEFAULTLIB:msvcrt.lib"])
+elif 'clang' in compiler:
+    env.Prepend(CFLAGS=["-std=gnu11"])
+    env.Append(CXXFLAGS=['-fno-cxx-exceptions', '-fno-exceptions', '-pedantic', "-std=gnu++17", '-Wno-gnu-anonymous-struct', "-Wno-nested-anon-types", "-Wno-extra-semi"])
+    env.Append(LINKFLAGS=["-nolibc","-nostdlib","-nodefaultlibs"])
+elif 'gcc' in compiler:
+    env.Prepend(CFLAGS=["-std=gnu11"])
+    env.Append(CXXFLAGS=['-fno-exceptions', '-fpermissive', "-std=gnu++17"])
+    env.Append(LINKFLAGS=["-nolibc","-nodefaultlibs"])
+elif 'emcc' in compiler:
+    env.Prepend(CFLAGS=["-std=gnu11"])
+    env.Append(CXXFLAGS=['-fno-exceptions', '-fpermissive', "-std=gnu++17"])
+    env.Append(LINKFLAGS=["-nolibc", "-nodefaultlibs"])
 
 # tweak this if you want to use different folders, or more folders, to store your source code in.
 sources = find_files_recursive("src/", "*.cpp")

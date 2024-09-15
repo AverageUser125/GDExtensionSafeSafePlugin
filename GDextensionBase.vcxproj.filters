@@ -18,15 +18,6 @@
     <None Include=".clang-format" />
     <None Include="SConstruct" />
     <None Include="vc140.pdb" />
-    <None Include="demo\.godot\uid_cache.bin">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="demo\test1.bin">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="demo\test2.bin">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include=".gitignore" />
   </ItemGroup>
   <ItemGroup>

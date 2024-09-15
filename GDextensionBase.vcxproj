@@ -91,9 +91,6 @@
   <ItemGroup>
     <None Include=".clang-format" />
     <None Include=".gitignore" />
-    <None Include="demo\.godot\uid_cache.bin" />
-    <None Include="demo\test1.bin" />
-    <None Include="demo\test2.bin" />
     <None Include="SConstruct" />
     <None Include="vc140.pdb" />
   </ItemGroup>
