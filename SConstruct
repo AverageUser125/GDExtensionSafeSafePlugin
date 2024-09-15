@@ -2,6 +2,9 @@
 import os
 import sys
 
+# export OSXCROSS_ROOT="$HOME/osxcross"
+# scons platform=macos osxcross_sdk=darwin24.1
+
 def find_folders(directory: str) -> list[str]:
     directories = [directory]
     for root, dirs, files in os.walk(directory):
@@ -15,9 +18,9 @@ def find_files_recursive(directory: str, filter_string: str) -> list:
         sources += Glob(d + filter_string)  # Collects matching files
     return sources
 
-
+SetOption('implicit_cache', 1)
 env = SConscript("godot-cpp/SConstruct") 
-
+env.Decider('MD5-timestamp')
 # For reference:
 # - CCFLAGS are compilation flags shared between C and C++
 # - CFLAGS are for C-specific compilation flags

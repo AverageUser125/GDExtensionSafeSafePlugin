@@ -13,7 +13,8 @@ func _process(_delta):
 func _on_save_button_pressed():
 	var data = JSON.parse_string($InputText.text)
 	if data == null:
-		data = {"key": $InputText.text}
+		$OutputText.text = "ERROR: enter a json dictionary"
+		return
 	$OutputText.text = ""
 	
 	res.set_dict(data)
