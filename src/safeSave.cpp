@@ -33,7 +33,7 @@ void SafeSave::set_dict(Dictionary dict) {
 Error SafeSave::load(const String &p_path) {
 	String absolutePath = ProjectSettings::get_singleton()->globalize_path(p_path);
 	PackedByteArray raw_data;
-	Error err = safeLoad(raw_data, (const char *)absolutePath.to_utf8_buffer().ptr());
+	Error err = safeLoad(raw_data, absolutePath);
 	if (err != OK)
 		return err;
 	deserialize_hashmap(raw_data, content);
@@ -45,7 +45,7 @@ Error SafeSave::save(const String &p_path) {
 	String absolutePath = ProjectSettings::get_singleton()->globalize_path(p_path);
 	PackedByteArray raw_data = serialize_hashmap(content);
 	// PackedByteArray raw_data = UtilityFunctions::var_to_bytes(res->get_dict());
-	return safeSave(raw_data.ptr(), raw_data.size(), (const char *)absolutePath.to_utf8_buffer().ptr());
+	return safeSave(raw_data, absolutePath);
 }
 
 void SafeSave::set(const String &key, const Variant &value) {

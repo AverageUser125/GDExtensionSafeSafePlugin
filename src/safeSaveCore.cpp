@@ -15,73 +15,6 @@
 #include <godot_cpp/variant/variant.hpp>
 using namespace godot;
 
-Error readEntireFile(std::vector<char> &data, const char *name) {
-	data.clear();
-	std::ifstream f(name, std::ios::binary);
-
-	if (!f.is_open()) {
-		return ERR_FILE_CANT_OPEN;
-	}
-	f.seekg(0, std::ios_base::end);
-	size_t size = f.tellg();
-	f.seekg(0, std::ios_base::beg);
-
-	data.resize(size);
-
-	f.read(&data[0], size);
-
-	return OK;
-}
-
-Error readEntireFile(void *data, size_t size, const char *name, bool shouldMatchSize, int *bytesRead) {
-	if (bytesRead) {
-		*bytesRead = 0;
-	}
-
-	std::ifstream f(name, std::ios::binary);
-	if (!f.is_open()) {
-		return ERR_FILE_CANT_OPEN;
-	}
-	f.seekg(0, std::ios_base::end);
-	size_t readSize = f.tellg();
-	f.seekg(0, std::ios_base::beg);
-
-	if (shouldMatchSize) {
-		if (readSize != size) {
-			return ERR_PARAMETER_RANGE_ERROR;
-		}
-		f.read((char *)data, readSize);
-		if (bytesRead) {
-			*bytesRead = readSize;
-		}
-
-		return OK;
-	}
-
-	f.read((char *)data, std::min(size, readSize));
-
-	if (bytesRead) {
-		*bytesRead = std::min(size, readSize);
-	}
-
-	return OK;
-}
-
-Error getFileSize(const char *name, size_t &size) {
-	size = 0;
-
-	std::ifstream f(name, std::ios::binary);
-
-	if (!f.is_open()) {
-		return ERR_FILE_CANT_OPEN;
-	}
-	f.seekg(0, std::ios_base::end);
-	size_t readSize = f.tellg();
-	f.close();
-	size = readSize;
-
-	return OK;
-}
 
 using HashType = unsigned long long;
 
@@ -110,54 +43,48 @@ HashType fnv_hash_1a_64(const void *key, int len) {
 	return h;
 }
 
-Error readEntireFileWithCheckSum(void *data, size_t size, const char *name) {
-	std::ifstream f(name, std::ios::binary);
-	if (!f.is_open()) {
+Error readEntireFileWithCheckSum(void *data, size_t size,String name) {
+	Ref<FileAccess> f = FileAccess::open(name, FileAccess::READ);
+
+	if (f.is_null() || !f->is_open()) {
 		return ERR_FILE_CANT_OPEN;
 	}
-	f.seekg(0, std::ios_base::end);
-	size_t readSize = f.tellg();
-	f.seekg(0, std::ios_base::beg);
 
-	size_t sizeWithCheckSum = size + sizeof(HashType);
+	size_t dataSize = f->get_length() - sizeof(HashType);
 
-	if (readSize != sizeWithCheckSum) {
-		return ERR_PARAMETER_RANGE_ERROR;
-	}
-	f.read((char *)data, size);
+	f->get_buffer((uint8_t*)data, dataSize);
+
+	// f->seek(readSize -sizeof(HashType));
 	HashType checkSum = 0;
-	f.read((char *)&checkSum, sizeof(HashType));
+	f->get_buffer((uint8_t *)&checkSum, sizeof(HashType));
 
 	HashType testCheck = fnv_hash_1a_64(data, size);
 
 	if (testCheck != checkSum) {
 		return ERR_FILE_CORRUPT;
 	}
-
 	return OK;
 }
 
-Error readEntireFileWithCheckSum(std::vector<char> &data, const char *name) {
+Error readEntireFileWithCheckSum(PackedByteArray &data, String name) {
 	data.clear();
 
-	std::ifstream f(name, std::ios::binary);
-	if (!f.is_open()) {
+	Ref<FileAccess> f = FileAccess::open(name, FileAccess::READ);
+
+	if (f.is_null() || !f->is_open()) {
 		return ERR_FILE_CANT_OPEN;
 	}
-	f.seekg(0, std::ios_base::end);
-	size_t readSize = f.tellg();
-	f.seekg(0, std::ios_base::beg);
 
-	if (readSize <= sizeof(HashType)) {
-		return ERR_FILE_CORRUPT;
-	}
-	data.resize(readSize - sizeof(HashType));
-	f.read(&data[0], readSize - sizeof(HashType));
+	size_t dataSize = f->get_length() - sizeof(HashType);
+	
+	data.resize(dataSize);
+	f->get_buffer(data.ptrw(), dataSize);
 
+	// f->seek(readSize -sizeof(HashType));
 	HashType checkSum = 0;
-	f.read((char *)&checkSum, sizeof(HashType));
+	f->get_buffer((uint8_t *)&checkSum, sizeof(HashType));
 
-	auto testCheck = fnv_hash_1a_64(&data[0], data.size());
+	HashType testCheck = fnv_hash_1a_64(data.ptr(), data.size());
 
 	if (testCheck != checkSum) {
 		return ERR_FILE_CORRUPT;
@@ -165,69 +92,31 @@ Error readEntireFileWithCheckSum(std::vector<char> &data, const char *name) {
 	return OK;
 }
 
-Error readEntireFileWithCheckSum(PackedByteArray &data, const char *name) {
-	data.clear();
+Error writeEntireFileWithCheckSum(const void *data, size_t size, String name) {
+	Ref<FileAccess> f = FileAccess::open(name, FileAccess::WRITE);
 
-	std::ifstream f(name, std::ios::binary);
-	if (!f.is_open()) {
+	// std::ofstream f(name, std::ios::binary);
+
+	if (f.is_null() || !f->is_open()) {
 		return ERR_FILE_CANT_OPEN;
 	}
-	f.seekg(0, std::ios_base::end);
-	size_t readSize = f.tellg();
-	f.seekg(0, std::ios_base::beg);
-
-	if (readSize <= sizeof(HashType)) {
-		return ERR_FILE_CORRUPT;
-	}
-	data.resize(readSize - sizeof(HashType));
-	f.read((char *)data.ptrw(), readSize - sizeof(HashType));
-
-	HashType checkSum = 0;
-	f.read((char *)&checkSum, sizeof(HashType));
-
-	auto testCheck = fnv_hash_1a_64(data.ptr(), data.size());
-
-	if (testCheck != checkSum) {
-		return ERR_FILE_CORRUPT;
-	}
-	return OK;
-}
-
-Error writeEntireFileWithCheckSum(const void *data, size_t size, const char *name) {
-	std::ofstream f(name, std::ios::binary);
-
-	if (!f.is_open()) {
-		return ERR_FILE_CANT_OPEN;
-	}
-	f.write((char *)data, size);
+	f->store_buffer((const uint8_t*)data, size);
 	HashType testCheck = fnv_hash_1a_64(data, size);
-	f.write((char *)&testCheck, sizeof(testCheck));
+	f->store_buffer((const uint8_t *)&testCheck, sizeof(HashType));
 	return OK;
 }
 
-Error writeEntireFile(const std::vector<char> &data, const char *name) {
-	return writeEntireFile(data.data(), data.size(), name);
+Error safeSave(const PackedByteArray& data, String nameWithoutExtension) {
+	return safeSave(data.ptr(), data.size(), nameWithoutExtension);
 }
 
-Error writeEntireFile(const void *data, size_t size, const char *name) {
-	std::ofstream f(name, std::ios::binary);
+Error safeSave(const void *data, size_t size, String nameWithoutExtension) {
+	String file1 = nameWithoutExtension + "1.bin";
+	String file2 = nameWithoutExtension + "2.bin";
 
-	if (!f.is_open()) {
-		return ERR_FILE_CANT_OPEN;
-	}
-	f.write((char *)data, size);
-	return OK;
-}
+	Error err1 = writeEntireFileWithCheckSum((char *)data, size, file1);
 
-Error safeSave(const void *data, size_t size, const char *nameWithoutExtension) {
-	String file1 = nameWithoutExtension;
-	file1 += "1.bin";
-	String file2 = nameWithoutExtension;
-	file2 += "2.bin";
-
-	Error err1 = writeEntireFileWithCheckSum((char *)data, size, file1.ascii().get_data());
-
-	Error err2 = writeEntireFileWithCheckSum((char *)data, size, file2.ascii().get_data());
+	Error err2 = writeEntireFileWithCheckSum((char *)data, size, file2);
 
 	if (err1 != OK && err2 != OK) {
 		if (err1 == OK) {
@@ -238,66 +127,35 @@ Error safeSave(const void *data, size_t size, const char *nameWithoutExtension) 
 	return OK;
 }
 
-Error safeLoad(void *data, size_t size, const char *nameWithoutExtension) {
-	std::string file1 = nameWithoutExtension;
-	file1 += "1.bin";
-	std::string file2 = nameWithoutExtension;
-	file2 += "2.bin";
+Error safeLoad(void *data, size_t size, String nameWithoutExtension) {
+	String file1 = nameWithoutExtension + "1.bin";
+	String file2 = nameWithoutExtension + "2.bin";
 
-	Error err = readEntireFileWithCheckSum((char *)data, size, file1.c_str());
+	Error err = readEntireFileWithCheckSum((char *)data, size, file1);
 
 	if (err == OK) {
 		return OK;
 	}
 
 	//load backup
-	Error err2 = readEntireFileWithCheckSum((char *)data, size, file2.c_str());
+	Error err2 = readEntireFileWithCheckSum((char *)data, size, file2);
 
 	// return even if err2 is OK, because it's not an error
 	return err2;
 }
 
-Error safeLoad(PackedByteArray &data, const char *nameWithoutExtension) {
+Error safeLoad(PackedByteArray &data, String nameWithoutExtension) {
 	data.clear();
 
-	std::string file1 = nameWithoutExtension;
-	file1 += "1.bin";
-	std::string file2 = nameWithoutExtension;
-	file2 += "2.bin";
+	String file1 = nameWithoutExtension + "1.bin";
+	String file2 = nameWithoutExtension + "2.bin";
 
-	Error err1 = readEntireFileWithCheckSum(data, file1.c_str());
+	Error err1 = readEntireFileWithCheckSum(data, file1);
 
 	if (err1 == OK) {
 		return OK;
 	}
 	//load backup
-	Error err2 = readEntireFileWithCheckSum(data, file2.c_str());
+	Error err2 = readEntireFileWithCheckSum(data, file2);
 	return err2;
-}
-
-Error safeLoad(std::vector<char> &data, const char *nameWithoutExtension) {
-	data.clear();
-
-	std::string file1 = nameWithoutExtension;
-	file1 += "1.bin";
-	std::string file2 = nameWithoutExtension;
-	file2 += "2.bin";
-
-	Error err = readEntireFileWithCheckSum(data, file1.c_str());
-
-	if (err == OK) {
-		return OK;
-	} else {
-		//load backup
-		Error err2 = readEntireFileWithCheckSum(data, file2.c_str());
-		return err2;
-	}
-}
-
-Error safeLoadBackup(void *data, size_t size, const char *nameWithoutExtension) {
-	std::string file2 = nameWithoutExtension;
-	file2 += "2.bin";
-
-	//load backup
-	return readEntireFileWithCheckSum((char *)data, size, file2.c_str());
 }
