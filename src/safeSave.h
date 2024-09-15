@@ -14,6 +14,7 @@ public:
 	Variant get(const String &key, const String &p_default) const;
 	void set(const String &key, const Variant &value);
 	bool has(const String &key) const;
+	void clear();
 
 	Dictionary get_dict();
 	void set_dict(Dictionary dict);

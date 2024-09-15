@@ -7,14 +7,10 @@
 ///////////////////////////////////////////
 
 #include "safeSaveCore.h"
-#include <cstdlib>
-#include <cstring>
 #include <godot_cpp/classes/file_access.hpp>
-#include <godot_cpp/templates/hash_map.hpp>
-#include <godot_cpp/variant/utility_functions.hpp>
-#include <godot_cpp/variant/variant.hpp>
 using namespace godot;
 
+constexpr auto SAVE_FILE_EXTENSION = ".bin";
 
 using HashType = unsigned long long;
 
@@ -111,12 +107,12 @@ Error safeSave(const PackedByteArray& data, String nameWithoutExtension) {
 }
 
 Error safeSave(const void *data, size_t size, String nameWithoutExtension) {
-	String file1 = nameWithoutExtension + "1.bin";
-	String file2 = nameWithoutExtension + "2.bin";
+	String file1 = nameWithoutExtension + "1" + SAVE_FILE_EXTENSION;
+	String file2 = nameWithoutExtension + "2" + SAVE_FILE_EXTENSION;
 
-	Error err1 = writeEntireFileWithCheckSum((char *)data, size, file1);
+	Error err1 = writeEntireFileWithCheckSum(data, size, file1);
 
-	Error err2 = writeEntireFileWithCheckSum((char *)data, size, file2);
+	Error err2 = writeEntireFileWithCheckSum(data, size, file2);
 
 	if (err1 != OK && err2 != OK) {
 		if (err1 == OK) {
@@ -128,8 +124,8 @@ Error safeSave(const void *data, size_t size, String nameWithoutExtension) {
 }
 
 Error safeLoad(void *data, size_t size, String nameWithoutExtension) {
-	String file1 = nameWithoutExtension + "1.bin";
-	String file2 = nameWithoutExtension + "2.bin";
+	String file1 = nameWithoutExtension + "1" + SAVE_FILE_EXTENSION;
+	String file2 = nameWithoutExtension + "2" + SAVE_FILE_EXTENSION;
 
 	Error err = readEntireFileWithCheckSum((char *)data, size, file1);
 
@@ -147,8 +143,8 @@ Error safeLoad(void *data, size_t size, String nameWithoutExtension) {
 Error safeLoad(PackedByteArray &data, String nameWithoutExtension) {
 	data.clear();
 
-	String file1 = nameWithoutExtension + "1.bin";
-	String file2 = nameWithoutExtension + "2.bin";
+	String file1 = nameWithoutExtension + "1" + SAVE_FILE_EXTENSION;
+	String file2 = nameWithoutExtension + "2" + SAVE_FILE_EXTENSION;
 
 	Error err1 = readEntireFileWithCheckSum(data, file1);
 

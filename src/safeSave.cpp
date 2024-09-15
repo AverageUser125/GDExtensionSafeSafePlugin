@@ -22,7 +22,6 @@ Dictionary SafeSave::get_dict() {
 }
 
 void SafeSave::set_dict(Dictionary dict) {
-	Dictionary d;
 	Array keys = dict.keys();
 	content.clear();
 	for (int i = 0; i < keys.size(); i++) {
@@ -49,6 +48,9 @@ Error SafeSave::save(const String &p_path) {
 }
 
 void SafeSave::set(const String &key, const Variant &value) {
+	//if (value.get_type() == Variant::NIL) {
+	//	content.erase(key);
+	//}
 	content[key] = value;
 }
 
@@ -63,6 +65,11 @@ Variant SafeSave::get(const String &key, const String &p_default = "") const {
 	return content[key];
 }
 
+
+void SafeSave::clear() {
+	content.clear();
+}
+
 // Serialize a HashMap<String, Variant> to a PackedByteArray
 PackedByteArray SafeSave::serialize_hashmap(const HashMap<String, Variant> &map) {
 	PackedByteArray buffer;
@@ -73,7 +80,7 @@ PackedByteArray SafeSave::serialize_hashmap(const HashMap<String, Variant> &map)
 	memcpy(buffer.ptrw(), &size, 4);
 
 	// Serialize each key-value pair
-	for (const auto &it : map) {
+	for (const KeyValue<String, Variant> &it : map) {
 		const String &key = it.key;
 		const Variant &value = it.value;
 
@@ -150,8 +157,10 @@ void SafeSave::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load", "path"), &SafeSave::load);
 
 	ClassDB::bind_method(D_METHOD("set", "key", "value"), &SafeSave::set);
+	ClassDB::bind_method(D_METHOD("set", "key", "value"), &SafeSave::set);
 	ClassDB::bind_method(D_METHOD("get", "key", "default"), &SafeSave::get);
 	ClassDB::bind_method(D_METHOD("has", "key"), &SafeSave::has);
+	ClassDB::bind_method(D_METHOD("clear"), &SafeSave::clear);
 
 	ClassDB::bind_method(D_METHOD("get_dict"), &SafeSave::get_dict);
 	ClassDB::bind_method(D_METHOD("set_dict", "dict"), &SafeSave::set_dict);
