@@ -13,3 +13,5 @@ old/
 *.pdb
 *.os
 *.o
+*.bin
+test*
