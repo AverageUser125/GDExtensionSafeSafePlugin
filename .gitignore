@@ -3,8 +3,8 @@
 less
 x64/
 Debug/
-.vs/GDextension
-.vs/GDextensionBase
+.vs/GDextension/
+.vs/GDextensionBase/
 .vs/*.sqlite
 .vs/VSWorkspaceState.json
 demo/.godot/
@@ -14,4 +14,4 @@ old/
 *.os
 *.o
 *.bin
-test*
+*.json
