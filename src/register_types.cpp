@@ -1,5 +1,4 @@
 #include "register_types.h"
-
 #include "safeSave.h"
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>

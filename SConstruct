@@ -32,15 +32,20 @@ env.Decider('MD5-timestamp')
 # fails cause gdextension uses std::array in UtilityFunctions apparantly
 # env.Append(LINKFLAGS="/NODEFAULTLIB")
 
+# just use compiledb=yes when calling scons
+env.Tool("compilation_db")
+env.Alias("compiledb", env.CompilationDatabase())
+env['COMPILATIONDB_USE_ABSPATH'] = 1
+
 compiler = env['CC']
 print("Using the following compiler: " + compiler)
 if compiler == 'cl':
     env.Append(CPPDEFINES=[("_HAS_EXCEPTIONS", 0)])
     env.Append(CXXFLAGS=["/EHs-", "/std:c++17"])
-    env.Append(LINKFLAGS=["/OPT:REF", "/NODEFAULTLIB:msvcrt.lib"])
+    env.Append(LINKFLAGS=["/OPT:REF", "/DEFAULTLIB:kernel32.lib", "/DEFAULTLIB:libucrt.lib","/DEFAULTLIB:libvcruntime.lib", "/DEFAULTLIB:LIBCMT.lib", "/DEFAULTLIB:libcpmt.lib"])
 elif 'clang' in compiler:
     env.Prepend(CFLAGS=["-std=gnu11"])
-    env.Append(CXXFLAGS=['-fno-cxx-exceptions', '-fno-exceptions', '-pedantic', "-std=gnu++17", '-Wno-gnu-anonymous-struct', "-Wno-nested-anon-types", "-Wno-extra-semi"])
+    env.Append(CXXFLAGS=['-fno-cxx-exceptions', '-fno-exceptions', "-std=gnu++17"])
     env.Append(LINKFLAGS=["-nolibc","-nostdlib","-nodefaultlibs"])
 elif 'gcc' in compiler:
     env.Prepend(CFLAGS=["-std=gnu11"])

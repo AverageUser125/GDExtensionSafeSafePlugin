@@ -10,7 +10,8 @@
 #include <godot_cpp/classes/file_access.hpp>
 using namespace godot;
 
-constexpr auto SAVE_FILE_EXTENSION = ".bin";
+// constexpr auto SAVE_FILE_EXTENSION = ".bin";
+#define SAVE_FILE_EXTENSION ".bin"
 
 using HashType = unsigned long long;
 
@@ -39,7 +40,7 @@ HashType fnv_hash_1a_64(const void *key, int len) {
 	return h;
 }
 
-Error readEntireFileWithCheckSum(void *data, size_t size,String name) {
+Error readEntireFileWithCheckSum(void *data, size_t size, const String &name) {
 	Ref<FileAccess> f = FileAccess::open(name, FileAccess::READ);
 
 	if (f.is_null() || !f->is_open()) {
@@ -62,7 +63,7 @@ Error readEntireFileWithCheckSum(void *data, size_t size,String name) {
 	return OK;
 }
 
-Error readEntireFileWithCheckSum(PackedByteArray &data, String name) {
+Error readEntireFileWithCheckSum(PackedByteArray &data, const String &name) {
 	data.clear();
 
 	Ref<FileAccess> f = FileAccess::open(name, FileAccess::READ);
@@ -88,7 +89,7 @@ Error readEntireFileWithCheckSum(PackedByteArray &data, String name) {
 	return OK;
 }
 
-Error writeEntireFileWithCheckSum(const void *data, size_t size, String name) {
+Error writeEntireFileWithCheckSum(const void *data, size_t size, const String &name) {
 	Ref<FileAccess> f = FileAccess::open(name, FileAccess::WRITE);
 
 	// std::ofstream f(name, std::ios::binary);
@@ -102,13 +103,15 @@ Error writeEntireFileWithCheckSum(const void *data, size_t size, String name) {
 	return OK;
 }
 
-Error safeSave(const PackedByteArray& data, String nameWithoutExtension) {
+Error safeSave(const PackedByteArray &data, const String &nameWithoutExtension) {
 	return safeSave(data.ptr(), data.size(), nameWithoutExtension);
 }
 
-Error safeSave(const void *data, size_t size, String nameWithoutExtension) {
-	String file1 = nameWithoutExtension + "1" + SAVE_FILE_EXTENSION;
-	String file2 = nameWithoutExtension + "2" + SAVE_FILE_EXTENSION;
+Error safeSave(const void *data, size_t size, const String &nameWithoutExtension) {
+	String file1 = nameWithoutExtension;
+	file1 += "1" SAVE_FILE_EXTENSION;
+	String file2 = nameWithoutExtension;
+	file2 += "2" SAVE_FILE_EXTENSION;
 
 	Error err1 = writeEntireFileWithCheckSum(data, size, file1);
 
@@ -123,9 +126,11 @@ Error safeSave(const void *data, size_t size, String nameWithoutExtension) {
 	return OK;
 }
 
-Error safeLoad(void *data, size_t size, String nameWithoutExtension) {
-	String file1 = nameWithoutExtension + "1" + SAVE_FILE_EXTENSION;
-	String file2 = nameWithoutExtension + "2" + SAVE_FILE_EXTENSION;
+Error safeLoad(void *data, size_t size, const String &nameWithoutExtension) {
+	String file1 = nameWithoutExtension;
+	file1 += "1" SAVE_FILE_EXTENSION;
+	String file2 = nameWithoutExtension;
+	file2 += "2" SAVE_FILE_EXTENSION;
 
 	Error err = readEntireFileWithCheckSum((char *)data, size, file1);
 
@@ -140,11 +145,13 @@ Error safeLoad(void *data, size_t size, String nameWithoutExtension) {
 	return err2;
 }
 
-Error safeLoad(PackedByteArray &data, String nameWithoutExtension) {
+Error safeLoad(PackedByteArray &data, const String& nameWithoutExtension) {
 	data.clear();
 
-	String file1 = nameWithoutExtension + "1" + SAVE_FILE_EXTENSION;
-	String file2 = nameWithoutExtension + "2" + SAVE_FILE_EXTENSION;
+	String file1 = nameWithoutExtension;
+	file1 += "1" SAVE_FILE_EXTENSION;
+	String file2 = nameWithoutExtension;
+	file2 += "2" SAVE_FILE_EXTENSION;
 
 	Error err1 = readEntireFileWithCheckSum(data, file1);
 

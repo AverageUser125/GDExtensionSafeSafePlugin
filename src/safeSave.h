@@ -1,4 +1,5 @@
-#pragma once
+#ifndef  SAFE_SAVE_H
+#define SAFE_SAVE_H
 
 #include <godot_cpp/classes/resource.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
@@ -11,6 +12,7 @@ public:
 	Error load(const String &p_path);
 	Error save(const String &p_path);
 
+	const Variant *getptr(const String &key, const String &p_default) const;
 	Variant get(const String &key, const String &p_default) const;
 	void set(const String &key, const Variant &value);
 	bool has(const String &key) const;
@@ -22,12 +24,16 @@ public:
 	const Variant &operator[](const Variant &p_key) const;
 	Variant &operator[](const Variant &p_key);
 
+	Error _deserialize(const PackedByteArray &buffer);
+	PackedByteArray _serialize() const;
+
 protected:
 	static void _bind_methods();
 
 private:
 	HashMap<String, Variant> content;
 
-	static Error deserialize_hashmap(const PackedByteArray &buffer, HashMap<String, Variant> &r_map);
-	static PackedByteArray serialize_hashmap(const HashMap<String, Variant> &map);
+	static Error deserialize(const PackedByteArray &buffer, HashMap<String, Variant> &r_map);
+	static PackedByteArray serialize(const HashMap<String, Variant> &map);
 };
+#endif // ! SAFE_SAVE_H

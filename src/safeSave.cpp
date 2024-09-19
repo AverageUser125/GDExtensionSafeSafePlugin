@@ -13,6 +13,14 @@ Variant &SafeSave::operator[](const Variant &p_key) {
 	return content[p_key];
 }
 
+Error SafeSave::_deserialize(const PackedByteArray &buffer) {
+	return deserialize(buffer, content);
+}
+
+PackedByteArray SafeSave::_serialize() const {
+	return serialize(content);
+}
+
 Dictionary SafeSave::get_dict() {
 	Dictionary d;
 	for (const KeyValue<String, Variant> &E : content) {
@@ -35,14 +43,15 @@ Error SafeSave::load(const String &p_path) {
 	Error err = safeLoad(raw_data, absolutePath);
 	if (err != OK)
 		return err;
-	deserialize_hashmap(raw_data, content);
+	deserialize(raw_data, content);
+	// deserialize(raw_data.decompress(raw_data.size()), content);
 	// content = UtilityFunctions::bytes_to_var(raw_data);
 	return OK;
 }
 
 Error SafeSave::save(const String &p_path) {
 	String absolutePath = ProjectSettings::get_singleton()->globalize_path(p_path);
-	PackedByteArray raw_data = serialize_hashmap(content);
+	PackedByteArray raw_data = serialize(content);
 	// PackedByteArray raw_data = UtilityFunctions::var_to_bytes(res->get_dict());
 	return safeSave(raw_data, absolutePath);
 }
@@ -62,16 +71,15 @@ Variant SafeSave::get(const String &key, const String &p_default = "") const {
 	if (!has(key)) {
 		return p_default;
 	}
-	return content[key];
+	return content.get(key);
 }
-
 
 void SafeSave::clear() {
 	content.clear();
 }
 
 // Serialize a HashMap<String, Variant> to a PackedByteArray
-PackedByteArray SafeSave::serialize_hashmap(const HashMap<String, Variant> &map) {
+PackedByteArray SafeSave::serialize(const HashMap<String, Variant> &map) {
 	PackedByteArray buffer;
 
 	// Serialize the number of elements (4 bytes)
@@ -100,10 +108,11 @@ PackedByteArray SafeSave::serialize_hashmap(const HashMap<String, Variant> &map)
 	}
 
 	return buffer;
+	// return buffer.compress();
 }
 
 // Deserialize a PackedByteArray into a HashMap<String, Variant>
-Error SafeSave::deserialize_hashmap(const PackedByteArray &buffer, HashMap<String, Variant> &r_map) {
+Error SafeSave::deserialize(const PackedByteArray &buffer, HashMap<String, Variant> &r_map){
 	const uint8_t *buf = buffer.ptr();
 	int len = buffer.size();
 
@@ -157,11 +166,13 @@ void SafeSave::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load", "path"), &SafeSave::load);
 
 	ClassDB::bind_method(D_METHOD("set", "key", "value"), &SafeSave::set);
-	ClassDB::bind_method(D_METHOD("set", "key", "value"), &SafeSave::set);
 	ClassDB::bind_method(D_METHOD("get", "key", "default"), &SafeSave::get);
 	ClassDB::bind_method(D_METHOD("has", "key"), &SafeSave::has);
 	ClassDB::bind_method(D_METHOD("clear"), &SafeSave::clear);
 
 	ClassDB::bind_method(D_METHOD("get_dict"), &SafeSave::get_dict);
 	ClassDB::bind_method(D_METHOD("set_dict", "dict"), &SafeSave::set_dict);
+
+	ClassDB::bind_method(D_METHOD("serialize"), &SafeSave::_serialize);
+	ClassDB::bind_method(D_METHOD("_deserialize", "data"), &SafeSave::_deserialize);
 }
