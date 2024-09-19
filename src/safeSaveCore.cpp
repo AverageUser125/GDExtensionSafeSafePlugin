@@ -25,14 +25,14 @@ HashType fnv_hash_1a_64(const void *key, int len) {
 	//	h = (h ^ p[i]) * 0x100000001b3ULL;
 	//}
 
-	if (len >= 4)
+	if (len >= 4) {
 		for (int i = 0; i < len - 3; i += 4) {
 			h = (h ^ p[i + 0]) * 0x100000001b3ULL;
 			h = (h ^ p[i + 1]) * 0x100000001b3ULL;
 			h = (h ^ p[i + 2]) * 0x100000001b3ULL;
 			h = (h ^ p[i + 3]) * 0x100000001b3ULL;
 		}
-
+	}
 	for (int i = len - (len % 4); i < len; i++) {
 		h = (h ^ p[i]) * 0x100000001b3ULL;
 	}

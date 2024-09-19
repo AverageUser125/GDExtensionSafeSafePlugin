@@ -45,7 +45,22 @@ Checks: "*,
   -cppcoreguidelines-pro-type-const-cast,
   -readability-else-after-return,
   -cert-oop54-cpp,
+  cppcoreguidelines-pro-type-member-init,
+  modernize-redundant-void-arg,
+  modernize-use-bool-literals,
+  modernize-use-default-member-init,
+  modernize-use-nullptr,
+  readability-braces-around-statements,
+  readability-redundant-member-init
 "
-WarningsAsErrors: ''
 HeaderFilterRegex: ''
 FormatStyle:     none
+WarningsAsErrors: ''
+HeaderFileExtensions: ['', h, hh, hpp, hxx]
+ImplementationFileExtensions: [c, cc, cpp, cxx]
+CheckOptions:
+  cppcoreguidelines-pro-type-member-init.IgnoreArrays: true
+  cppcoreguidelines-pro-type-member-init.UseAssignment: true
+  modernize-use-bool-literals.IgnoreMacros: false
+  modernize-use-default-member-init.IgnoreMacros: false
+  modernize-use-default-member-init.UseAssignment: true

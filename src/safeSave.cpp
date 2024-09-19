@@ -41,8 +41,9 @@ Error SafeSave::load(const String &p_path) {
 	String absolutePath = ProjectSettings::get_singleton()->globalize_path(p_path);
 	PackedByteArray raw_data;
 	Error err = safeLoad(raw_data, absolutePath);
-	if (err != OK)
+	if (err != OK) {
 		return err;
+	}
 	deserialize(raw_data, content);
 	// deserialize(raw_data.decompress(raw_data.size()), content);
 	// content = UtilityFunctions::bytes_to_var(raw_data);
