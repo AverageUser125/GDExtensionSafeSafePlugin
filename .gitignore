@@ -1,11 +1,8 @@
-*.obj
-*.dblite
 less
 x64/
 Debug/
 .vs/GDextension/
 .vs/GDextensionBase/
-.vs/*.sqlite
 .vs/VSWorkspaceState.json
 demo/.godot/
 old/
@@ -14,4 +11,5 @@ old/
 *.os
 *.o
 *.bin
-*.json
+*.dblite
+*.sqlite
