@@ -5,6 +5,9 @@ import sys
 # export OSXCROSS_ROOT="$HOME/osxcross"
 # scons platform=macos osxcross_sdk=darwin24.1
 
+# clang-tidy.exe --config-file=".clang-tidy" .\src\*.cpp .\src\*.h
+# just use compiledb=yes when calling scons
+
 def find_folders(directory: str) -> list[str]:
     directories = [directory]
     for root, dirs, files in os.walk(directory):
@@ -21,18 +24,10 @@ def find_files_recursive(directory: str, filter_string: str) -> list:
 SetOption('implicit_cache', 1)
 env = SConscript("godot-cpp/SConstruct") 
 env.Decider('MD5-timestamp')
-# For reference:
-# - CCFLAGS are compilation flags shared between C and C++
-# - CFLAGS are for C-specific compilation flags
-# - CXXFLAGS are for C++-specific compilation flags
-# - CPPFLAGS are for pre-processor flags
-# - CPPDEFINES are for pre-processor defines
-# - LINKFLAGS are for linking flags
 
 # fails cause gdextension uses std::array in UtilityFunctions apparantly
 # env.Append(LINKFLAGS="/NODEFAULTLIB")
 
-# just use compiledb=yes when calling scons
 env.Tool("compilation_db")
 env.Alias("compiledb", env.CompilationDatabase())
 env['COMPILATIONDB_USE_ABSPATH'] = 1
