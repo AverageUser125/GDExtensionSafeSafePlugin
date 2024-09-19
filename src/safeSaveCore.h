@@ -5,8 +5,8 @@
 // safeSave 1.0.0
 //
 ///////////////////////////////////////////
-
-#pragma once
+#ifndef SAFE_SAVE_CORE_H
+#define SAFE_SAVE_CORE_H
 #include <fstream>
 #include <godot_cpp/classes/global_constants.hpp>
 #include <godot_cpp/variant/packed_byte_array.hpp>
@@ -38,3 +38,5 @@ Error safeLoad(void *data, size_t size, const String &nameWithoutExtension);
 
 //loads the data that was saved using safeSave and stored as a SafeSafeKeyValueData structure
 Error safeLoad(PackedByteArray &data, const String &nameWithoutExtension);
+
+#endif
